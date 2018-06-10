@@ -14,7 +14,7 @@ public class Exercise2 {
     @Test
     public void personHasNotEmptyLastNameAndFirstName() {
         // TODO предикат Person -> boolean, проверяющий что имя и фамилия человека не пусты
-        Predicate<Person> validate = null;
+        Predicate<Person> validate = (person) -> !person.getFirstName().equals("") && !person.getLastName().equals("");
 
         assertTrue(validate.test(new Person("Алексей", "Доренко", 40)));
         assertFalse(validate.test(new Person("Николай", "", 30)));
@@ -24,26 +24,27 @@ public class Exercise2 {
     // TODO метод (Person -> boolean) -> (Person -> boolean)
     // TODO - возвращает новый предикат, являющийся отрицанием исходного
     // TODO - при реализации использовать логический оператор !
-    private Predicate<Person> negateUsingLogicalOperator(Predicate<Person> predicate) {
-        throw new UnsupportedOperationException();
+    private Predicate<Person> negateUsingLogicalOperator(Predicate<Person> predicate){
+        return  (Person) -> !predicate.test(Person);
     }
 
     // TODO метод (Person -> boolean, Person -> boolean) -> (Person -> boolean)
     // TODO - возвращает новый предикат, объединяющий исходные с помощью операции "AND"
     // TODO - при реализации использовать логический оператор &&
     private Predicate<Person> andUsingLogicalOperator(Predicate<Person> left, Predicate<Person> right) {
-        throw new UnsupportedOperationException();
+        return (Person) -> left.test(Person) && right.test(Person);
     }
 
     @Test
     public void personHasNotEmptyLastNameAndFirstNameUsingLogicalOperators() {
-        Predicate<Person> personHasEmptyFirstName = null;
-        Predicate<Person> personHasEmptyLastName = null;
+        Predicate<Person> personHasEmptyFirstName = (person) -> person.getFirstName().equals("");
+        Predicate<Person> personHasEmptyLastName = (person) -> person.getLastName().equals("");
 
-        Predicate<Person> personHasNotEmptyFirstName = null;
-        Predicate<Person> personHasNotEmptyLastName = null;
+        Predicate<Person> personHasNotEmptyFirstName = (person) -> !person.getFirstName().equals("");
+        Predicate<Person> personHasNotEmptyLastName = (person) -> !person.getLastName().equals("");
 
-        Predicate<Person> personHasNotEmptyLastNameAndFirstName = null;
+        Predicate<Person> personHasNotEmptyLastNameAndFirstName = (person) -> !person.getFirstName().equals("")
+                && !person.getLastName().equals("");
 
         assertTrue(personHasNotEmptyLastNameAndFirstName.test(new Person("Алексей", "Доренко", 40)));
         assertFalse(personHasNotEmptyLastNameAndFirstName.test(new Person("Николай", "", 30)));
@@ -54,25 +55,26 @@ public class Exercise2 {
     // TODO - возвращает новый предикат, являющийся отрицанием исходного
     // TODO - при реализации использовать логический оператор !
     private <T> Predicate<T> negate(Predicate<T> predicate) {
-        throw new UnsupportedOperationException();
+        return  (T) -> !predicate.test(T);
     }
 
     // TODO метод (T -> boolean, T -> boolean) -> (T -> boolean)
     // TODO - возвращает новый предикат, объединяющий исходные с помощью операции "AND"
     // TODO - при реализации использовать логический оператор &&
     private <T> Predicate<T> and(Predicate<T> left, Predicate<T> right) {
-        throw new UnsupportedOperationException();
+        return  (T) -> left.test(T) && right.test(T);
     }
 
     @Test
     public void personHasNotEmptyLastNameAndFirstNameUsingGenericPredicates() {
-        Predicate<Person> personHasEmptyFirstName = null;
-        Predicate<Person> personHasEmptyLastName = null;
+        Predicate<Person> personHasEmptyFirstName = (person) -> person.getFirstName().equals("");
+        Predicate<Person> personHasEmptyLastName = (person) -> person.getLastName().equals("");
 
-        Predicate<Person> personHasNotEmptyFirstName = null;
-        Predicate<Person> personHasNotEmptyLastName = null;
+        Predicate<Person> personHasNotEmptyFirstName = (person) -> !personHasEmptyFirstName.test(person);
+        Predicate<Person> personHasNotEmptyLastName = (person) -> !personHasEmptyLastName.test(person);
 
-        Predicate<Person> personHasNotEmptyLastNameAndFirstName = null;
+        Predicate<Person> personHasNotEmptyLastNameAndFirstName = (person) -> personHasNotEmptyFirstName.test(person)
+                && personHasNotEmptyLastName.test(person);
 
         assertTrue(personHasNotEmptyLastNameAndFirstName.test(new Person("Алексей", "Доренко", 40)));
         assertFalse(personHasNotEmptyLastNameAndFirstName.test(new Person("Николай", "", 30)));
@@ -81,15 +83,15 @@ public class Exercise2 {
 
     @Test
     public void personHasNotEmptyLastNameAndFirstNameUsingStandardMethods() {
-        Predicate<Person> personHasEmptyFirstName = null;
-        Predicate<Person> personHasEmptyLastName = null;
+        Predicate<Person> personHasEmptyFirstName = (person) -> person.getFirstName().equals("");
+        Predicate<Person> personHasEmptyLastName = (person) -> person.getLastName().equals("");
 
         // TODO использовать Predicate.negate
-        Predicate<Person> personHasNotEmptyFirstName = null;
-        Predicate<Person> personHasNotEmptyLastName = null;
+        Predicate<Person> personHasNotEmptyFirstName = personHasEmptyFirstName.negate();
+        Predicate<Person> personHasNotEmptyLastName = personHasEmptyLastName.negate();
 
         // TODO использовать Predicate.and
-        Predicate<Person> personHasNotEmptyLastNameAndFirstName = null;
+        Predicate<Person> personHasNotEmptyLastNameAndFirstName = personHasNotEmptyFirstName.and(personHasNotEmptyLastName);
 
         assertTrue(personHasNotEmptyLastNameAndFirstName.test(new Person("Алексей", "Доренко", 40)));
         assertFalse(personHasNotEmptyLastNameAndFirstName.test(new Person("Николай", "", 30)));
