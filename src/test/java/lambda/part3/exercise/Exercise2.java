@@ -39,7 +39,11 @@ public class Exercise2 {
          * @param mapping Функция преобразования элементов.
          */
         public <R> MapHelper<R> map(Function<T, R> mapping) {
-            throw new UnsupportedOperationException();
+           List<R> result = new ArrayList<>();
+           source.forEach(T-> {
+               result.add(mapping.apply(T));
+           });
+            return new MapHelper<>(result);
         }
 
         /**
@@ -49,7 +53,17 @@ public class Exercise2 {
          * @param flatMapping Функция преобразования элементов.
          */
         public <R> MapHelper<R> flatMap(Function<T, List<R>> flatMapping) {
-            throw new UnsupportedOperationException();
+            List<List<R>> listOfR = new ArrayList<>();
+            source.forEach(T-> {
+                listOfR.add(flatMapping.apply(T));
+            });
+            List<R> result = new ArrayList<>();
+            listOfR.forEach(S-> {
+                S.forEach(L-> {
+                    result.add((R)L);
+                });
+            });
+            return new MapHelper<>(result);
         }
     }
 
@@ -57,7 +71,7 @@ public class Exercise2 {
     public void mapEmployeesToLengthOfTheirFullNamesUsingMapHelper() {
         List<Employee> employees = getEmployees();
 
-        List<Integer> lengths = null;
+        List<Integer> lengths = MapHelper.from(employees).map(Employee::getPerson).map(Person::getFullName).map(String::length).getMapped();
         // TODO                 MapHelper.from(employees)
         // TODO                          .map(Employee -> Person)
         // TODO                          .map(Person -> String(full name))
@@ -70,7 +84,13 @@ public class Exercise2 {
     public void mapEmployeesToCodesOfLetterTheirPositionsUsingMapHelper() {
         List<Employee> employees = getEmployees();
 
-        List<Integer> codes = null;
+        List<Integer> codes = MapHelper.from(employees).flatMap(Employee::getJobHistory).map(JobHistoryEntry::getPosition).
+                flatMap(String->{char[] arrayOfChars = String.toCharArray();
+                    List<Character> listOfCharacters = new ArrayList<>();
+                    for (char aChar : arrayOfChars) {
+                        listOfCharacters.add(aChar);
+                    }
+                    return listOfCharacters;}).map(Character->(int)Character).getMapped();
         // TODO               MapHelper.from(employees)
         // TODO                        .flatMap(Employee -> JobHistoryEntry)
         // TODO                        .map(JobHistoryEntry -> String(position))
