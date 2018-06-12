@@ -18,20 +18,34 @@ public class Exercise4 {
 
     private static class LazyCollectionHelper<T, R> {
 
+        private List<R> source;
+
+        private LazyCollectionHelper(List<R> source){
+            this.source = source;
+        }
+
         public static <T> LazyCollectionHelper<T, T> from(List<T> list) {
-            throw new UnsupportedOperationException();
+            return new LazyCollectionHelper<>(list);
         }
 
         public <U> LazyCollectionHelper<T, U> flatMap(Function<R, List<U>> flatMapping) {
-            throw new UnsupportedOperationException();
+            List<List<U>> listOfListsOfU = new ArrayList<>();
+            source.forEach(R -> {listOfListsOfU.add(flatMapping.apply(R));});
+            List<U> result = new ArrayList<>();
+            listOfListsOfU.forEach(L -> {
+                L.forEach(K->{result.add((U)K);});
+            });
+            return new LazyCollectionHelper<>(result);
         }
 
         public <U> LazyCollectionHelper<T, U> map(Function<R, U> mapping) {
-            throw new UnsupportedOperationException();
+            List<U> newSource = new ArrayList<>();
+            source.forEach(R -> {newSource.add(mapping.apply(R));});
+            return new LazyCollectionHelper<>(newSource);
         }
 
         public List<R> force() {
-            throw new UnsupportedOperationException();
+            return source;
         }
     }
 
@@ -39,7 +53,14 @@ public class Exercise4 {
     public void mapEmployeesToCodesOfLetterTheirPositionsUsingLazyFlatMapHelper() {
         List<Employee> employees = getEmployees();
 
-        List<Integer> codes = null;
+        List<Integer> codes =  LazyCollectionHelper.from(employees).flatMap(Employee::getJobHistory).
+                map(JobHistoryEntry::getPosition).flatMap(String -> {
+                    char[] arrayOfChars = String.toCharArray();
+                    List<Character> listOfCharacters = new ArrayList<>();
+                    for (char character : arrayOfChars) {
+                         listOfCharacters.add(character);
+                    }
+                    return listOfCharacters;}).map(Character->(int)Character).force();
         // TODO              LazyCollectionHelper.from(employees)
         // TODO                                  .flatMap(Employee -> JobHistoryEntry)
         // TODO                                  .map(JobHistoryEntry -> String(position))
