@@ -5,6 +5,7 @@ import lambda.data.JobHistoryEntry;
 import lambda.data.Person;
 import org.junit.Test;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -17,9 +18,15 @@ public class Exercise3 {
 
     private static class LazyMapHelper<T, R> {
 
+        private List <R> source;
+
+        private LazyMapHelper(List<R> source){
+            this.source = source;
+        }
+
         public static <T> LazyMapHelper<T, T> from(List<T> list) {
             // TODO реализация
-            throw new UnsupportedOperationException();
+            return new LazyMapHelper<>(list);
         }
 
         public List<R> force() {
@@ -29,7 +36,15 @@ public class Exercise3 {
 
         public <R2> LazyMapHelper<T, R2> map(Function<R, R2> mapping) {
             // TODO реализация
-            throw new UnsupportedOperationException();
+            List<R2> newSource = new ArrayList<>();
+            source.forEach(R->{
+                newSource.add(mapping.apply(R));
+            });
+            return new LazyMapHelper<>(newSource);
+        }
+
+        public List<R> getMapped(){
+            return source;
         }
     }
 
@@ -37,7 +52,8 @@ public class Exercise3 {
     public void mapEmployeesToLengthOfTheirFullNamesUsingLazyMapHelper() {
         List<Employee> employees = getEmployees();
 
-        List<Integer> lengths = null;
+        List<Integer> lengths = LazyMapHelper.from(employees).map(Employee::getPerson).map(Person::getFullName).
+                map(String::length).getMapped();
         // TODO                 LazyMapHelper.from(employees)
         // TODO                              .map(Employee -> Person)
         // TODO                              .map(Person -> String(full name))
