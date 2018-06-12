@@ -36,11 +36,11 @@ public class Exercise3 {
 
         public <R2> LazyMapHelper<T, R2> map(Function<R, R2> mapping) {
             // TODO реализация
-            List<R2> newSource = new ArrayList<>();
+            List<R2> result = new ArrayList<>();
             source.forEach(R->{
-                newSource.add(mapping.apply(R));
+                result.add(mapping.apply(R));
             });
-            return new LazyMapHelper<>(newSource);
+            return new LazyMapHelper<>(result);
         }
 
         public List<R> getMapped(){
