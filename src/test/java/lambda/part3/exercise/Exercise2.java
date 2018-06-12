@@ -53,12 +53,12 @@ public class Exercise2 {
          * @param flatMapping Функция преобразования элементов.
          */
         public <R> MapHelper<R> flatMap(Function<T, List<R>> flatMapping) {
-            List<List<R>> listOfR = new ArrayList<>();
+            List<List<R>> listOfListsOfR = new ArrayList<>();
             source.forEach(T-> {
-                listOfR.add(flatMapping.apply(T));
+                listOfListsOfR.add(flatMapping.apply(T));
             });
             List<R> result = new ArrayList<>();
-            listOfR.forEach(S-> {
+            listOfListsOfR.forEach(S-> {
                 S.forEach(L-> {
                     result.add((R)L);
                 });
