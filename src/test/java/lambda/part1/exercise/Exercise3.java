@@ -19,7 +19,7 @@ public class Exercise3 {
         Person[] persons = getPersons();
 
         // TODO использовать Arrays.sort + expression-lambda
-        Arrays.sort(persons, (person1, person2)->Integer.compare(person1.getAge(), person2.getAge()));
+        Arrays.sort(persons, (person1, person2) -> Integer.compare(person1.getAge(), person2.getAge()));
 
         assertArrayEquals(new Person[]{
                 new Person("Иван", "Мельников", 20),
@@ -34,14 +34,11 @@ public class Exercise3 {
         Person[] persons = getPersons();
 
         // TODO использовать Arrays.sort + statement-lambda
-        Arrays.sort(persons, (person1, person2)->{final String firstSirname = person1.getLastName();
-            final String secondSirname = person2.getLastName();
-            final String firstName = person1.getFirstName();
-            final String secondName = person2.getFirstName();
-            return firstSirname.compareTo(secondSirname)>0 ||
-                    firstSirname.compareTo(secondSirname)==0 && firstName.compareTo(secondName)>0? 1:
-                    firstSirname.compareTo(secondSirname)<0 ||
-                            firstSirname.compareTo(secondSirname)==0 && firstName.compareTo(secondName)<0? -1: 0;});
+        Arrays.sort(persons, (person1, person2) -> {
+            final String firstFullName = person1.getLastName() + person1.getFirstName();
+            final String secondFullName = person2.getLastName() + person2.getFirstName();
+            return firstFullName.compareTo(secondFullName);
+        });
 
         assertArrayEquals(new Person[]{
                 new Person("Алексей", "Доренко", 40),
@@ -57,7 +54,7 @@ public class Exercise3 {
 
         // TODO использовать FluentIterable
         Optional<Person> personOptional = FluentIterable.from(persons)
-                .firstMatch((person)->person.getAge()==30);
+                .firstMatch((person) -> person.getAge() == 30);
         Person person = personOptional.get();
 
         assertEquals(new Person("Николай", "Зимов", 30), person);
