@@ -14,16 +14,12 @@ import static org.junit.Assert.assertFalse;
 @SuppressWarnings({"unused", "ConstantConditions"})
 public class Exercise1 {
 
-    private static int ageOfPerson(Person person){
-        return person.getAge();
-    }
-
     @Test
     public void ageExtractorFromPersonUsingMethodReference() {
         Person person = new Person("Иван", "Мельников", 33);
 
         // TODO создать переменную ageExtractor: Person -> Integer, используя Function и ссылку на метод
-        Function<Person, Integer> ageExtractor = Exercise1::ageOfPerson;
+        Function<Person, Integer> ageExtractor = Person::getAge;
 
         assertEquals(33, ageExtractor.apply(person).intValue());
     }
@@ -66,7 +62,7 @@ public class Exercise1 {
         // (Person, Person) -> Integer
         // TODO воспользоваться методом createExtractorAgeOfPersonWithTheLongestFullName
         BiFunction<Person, Person, Integer> extractorAgeOfPersonWithTheLongestFullName =
-                createExtractorAgeOfPersonWithTheLongestFullName((person) -> person.getFullName());
+                createExtractorAgeOfPersonWithTheLongestFullName(getFullName);
 
         assertEquals(33, extractorAgeOfPersonWithTheLongestFullName.apply(person1, person2).intValue());
     }
