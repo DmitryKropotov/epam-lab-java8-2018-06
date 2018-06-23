@@ -7,7 +7,9 @@ import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Stream;
 
 import static org.junit.Assert.assertEquals;
 
@@ -18,7 +20,7 @@ public class Exercise2 {
     public void calcAverageAgeOfEmployees() {
         List<Employee> employees = getEmployees();
 
-        Double expected = null;
+        Double expected = employees.stream().map(Employee::getPerson).mapToInt(Person::getAge).average().getAsDouble();
 
         assertEquals(33.66, expected, 0.1);
     }
@@ -27,7 +29,8 @@ public class Exercise2 {
     public void findPersonWithLongestFullName() {
         List<Employee> employees = getEmployees();
 
-        Person expected = null;
+        Person expected = employees.stream().map(Employee::getPerson).
+                max(Comparator.comparingInt(Person -> Person.getFullName().length())).get();
 
         assertEquals(expected, employees.get(1).getPerson());
     }
@@ -36,9 +39,13 @@ public class Exercise2 {
     public void findEmployeeWithMaximumDurationAtOnePosition() {
         List<Employee> employees = getEmployees();
 
-        Employee expected = null;
+        Employee expected = employees.stream().max(Comparator.comparingInt(Exercise2::maxDurationAtOnePositionOfEmployee)).get();
 
         assertEquals(expected, employees.get(4));
+    }
+
+    private static int maxDurationAtOnePositionOfEmployee(Employee employee){
+        return employee.getJobHistory().stream().mapToInt(JobHistoryEntry::getDuration).max().getAsInt();
     }
 
     /**
@@ -50,9 +57,14 @@ public class Exercise2 {
     public void calcTotalSalaryWithCoefficientWorkExperience() {
         List<Employee> employees = getEmployees();
 
-        Double expected = null;
+        Double expected = employees.stream().map(Employee::getJobHistory).mapToDouble(jobHistory ->
+            jobHistory.get(jobHistory.size() - 1).getDuration() < 3 ? 75000 : 75000 * 1.2).sum();
 
         assertEquals(465000.0, expected, 0.001);
+    }
+
+    private static Stream<JobHistoryEntry> employeeToJobHistoryEntryStream(Employee employee){
+        return employee.getJobHistory().stream();
     }
 
     private static List<Employee> getEmployees() {
