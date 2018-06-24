@@ -6,7 +6,11 @@ import lambda.data.Person;
 import org.junit.Test;
 
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
+import static java.util.stream.Collectors.mapping;
+import static java.util.stream.Collectors.toSet;
 import static org.junit.Assert.assertEquals;
 
 @SuppressWarnings({"ConstantConditions", "unused"})
@@ -17,9 +21,15 @@ public class Exercise1 {
         List<Employee> employees = getEmployees();
 
         // TODO реализация
-        Long hours = null;
+        Stream<JobHistoryEntry> jobHistoryEntryStream = employees.stream().flatMap(Exercise1::employeeToJobHistoryEntryStream);
+        Long hours = employees.stream().flatMap(Exercise1::employeeToJobHistoryEntryStream).
+        filter(jobHistoryEntry -> jobHistoryEntry.getEmployer().equals("EPAM")).mapToLong(JobHistoryEntry::getDuration).sum();
 
-        assertEquals(18, hours.longValue());
+        assertEquals(19, hours.longValue());
+    }
+
+    private static Stream<JobHistoryEntry> employeeToJobHistoryEntryStream(Employee employee) {
+       return employee.getJobHistory().stream();
     }
 
     @Test
@@ -27,7 +37,8 @@ public class Exercise1 {
         List<Employee> employees = getEmployees();
 
         // TODO реализация
-        Set<Person> workedAsQa = null;
+        Set<Person> workedAsQa = employees.stream().filter(Employee -> Employee.getJobHistory().stream().
+                map(JobHistoryEntry::getPosition).anyMatch(string -> string.equals("QA"))).map(Employee::getPerson).collect(Collectors.toSet());
 
         assertEquals(new HashSet<>(Arrays.asList(
                 employees.get(2).getPerson(),
@@ -41,7 +52,7 @@ public class Exercise1 {
         List<Employee> employees = getEmployees();
 
         // TODO реализация
-        String result = null;
+        String result = employees.stream().map(Employee::getPerson).map(Person::getFullName).collect(Collectors.joining("\n"));
 
         assertEquals("Иван Мельников\n"
                 + "Александр Дементьев\n"
@@ -57,7 +68,12 @@ public class Exercise1 {
         List<Employee> employees = getEmployees();
 
         // TODO реализация
-        Map<String, Set<Person>> result = null;
+        Map<String, Set<Person>> result = employees.stream().collect(Collectors.
+                toMap(employee -> employee.getJobHistory().get(0).getPosition(), employee -> new HashSet<>(
+                Collections.singletonList(employee.getPerson())), (leftPersons, rightPersons) -> {
+                leftPersons.addAll(rightPersons);
+                return leftPersons;
+        }));
 
         Map<String, Set<Person>> expected = new HashMap<>();
         expected.put("QA", new HashSet<>(Arrays.asList(employees.get(2).getPerson(), employees.get(5).getPerson())));
@@ -76,7 +92,9 @@ public class Exercise1 {
         List<Employee> employees = getEmployees();
 
         // TODO реализация
-        Map<String, Set<Person>> result = null;
+        Map<String, Set<Person>> result = employees.stream().map(Exercise1::employeeToPersonFirstPositionPair).
+           collect(Collectors.groupingBy(PersonPositionPair::getPosition, mapping(PersonPositionPair::getPerson, toSet())));
+
 
         Map<String, Set<Person>> expected = new HashMap<>();
         expected.put("QA", new HashSet<>(Arrays.asList(employees.get(2).getPerson(), employees.get(5).getPerson())));
@@ -87,6 +105,39 @@ public class Exercise1 {
                 employees.get(4).getPerson()))
         );
         assertEquals(expected, result);
+    }
+
+    private static class PersonPositionPair {
+        Person person;
+        String position;
+
+        PersonPositionPair(Person person, String position) {
+            this.person = person;
+            this.position = position;
+        }
+
+        Person getPerson() {
+            return person;
+        }
+
+        String getPosition() {
+            return position;
+        }
+    }
+
+    private static PersonPositionPair employeeToPersonFirstPositionPair(Employee employee){
+        Person person = employee.getPerson();
+        String position = employee.getJobHistory().get(0).getPosition();
+        return new PersonPositionPair(person, position);
+    }
+
+    private static HashMap<String, Set<Person>> mergeMaps(HashMap<String, Set<Person>> left, HashMap<String, Set<Person>> right) {
+        HashMap<String, Set<Person>> result = new HashMap<>(left);
+        right.forEach((key, value) -> result.merge(key, value, (resultSet, rightSet) -> {
+            resultSet.addAll(rightSet);
+            return resultSet;
+        }));
+        return result;
     }
 
     private static List<Employee> getEmployees() {
