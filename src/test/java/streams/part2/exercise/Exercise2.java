@@ -6,11 +6,31 @@ import lambda.data.Person;
 import org.junit.Test;
 
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.junit.Assert.assertEquals;
 
 @SuppressWarnings("ConstantConditions")
 public class Exercise2 {
+
+    private static class PairPersonT<T> {
+        private Person person;
+        private T tParameter;
+
+        PairPersonT(Person person, T tParameter) {
+            this.person = person;
+            this.tParameter = tParameter;
+        }
+
+        Person getPerson() {
+            return person;
+        }
+
+        T getTParameter() {
+            return tParameter;
+        }
+    }
 
     /**
      * Преобразовать список сотрудников в отображение [компания -> множество людей, когда-либо работавших в этой компании].
@@ -68,7 +88,12 @@ public class Exercise2 {
     public void employersStuffList() {
         List<Employee> employees = getEmployees();
 
-        Map<String, Set<Person>> result = null;
+        Map<String, Set<Person>> result = employees.stream().flatMap(Exercise2::employeeToPairsEmployerPerson).
+                collect(Collectors.toMap(PairPersonT::getTParameter(),
+                        pairEmployerPerson -> new HashSet<>(Collections.singletonList(pairEmployerPerson.getPerson())), (set1, set2) -> {
+              set1.addAll(set2);
+              return set1;
+            }));
 
         Map<String, Set<Person>> expected = new HashMap<>();
         expected.put("yandex", new HashSet<>(Collections.singletonList(employees.get(2).getPerson())));
@@ -88,6 +113,11 @@ public class Exercise2 {
             employees.get(5).getPerson()
         )));
         assertEquals(expected, result);
+    }
+
+    private static Stream<PairPersonT<Person>> employeeToPairsEmployerPerson(Employee employee) {
+        Person person = employee.getPerson();
+        return employee.getJobHistory().stream().map(JobHistoryEntry::getEmployer).map(employer -> new PairPersonT(person, employer));
     }
 
     /**
@@ -142,7 +172,11 @@ public class Exercise2 {
     public void indexByFirstEmployer() {
         List<Employee> employees = getEmployees();
 
-        Map<String, Set<Person>> result = null;
+        Map<String, Set<Person>> result = employees.stream().collect(Collectors.toMap(Exercise2::employeeToFirstCompany,
+                employee -> new HashSet<>(Collections.singletonList(employee.getPerson())), (set1, set2) -> {
+                    set1.addAll(set2);
+                    return set1;
+                }));
 
         Map<String, Set<Person>> expected = new HashMap<>();
         expected.put("yandex", new HashSet<>(Collections.singletonList(employees.get(2).getPerson())));
@@ -158,6 +192,10 @@ public class Exercise2 {
         assertEquals(expected, result);
     }
 
+    private static String employeeToFirstCompany(Employee employee){
+        return employee.getJobHistory().get(0).getEmployer();
+    }
+
     /**
      * Преобразовать список сотрудников в отображение [компания -> сотрудник, суммарно проработавший в ней наибольшее время].
      * Гарантируется, что такой сотрудник будет один.
@@ -166,7 +204,12 @@ public class Exercise2 {
     public void greatestExperiencePerEmployer() {
         List<Employee> employees = getEmployees();
 
-        Map<String, Person> collect = null;
+        Map<String, Person> collect = employees.stream().flatMap(Exercise2::employeeToTriplePersonEmployerDuration).
+                map(Exercise2::triplePersonEmployerDurationToPairEmployerPairPersonDuration).
+                collect(Collectors.toMap(PairEmployerPairPersonDuration::getEmployer,
+                        new PairPersonT<Integer>(TripleEmployerPersonDuration::getPerson, TripleEmployerPersonDuration::getDuration),
+                        (pairPersonT1, pairPersonT2) -> pairPersonT1.getTParameter() >  pairPersonT2.getTParameter() ?  pairPersonT1 : pairPersonT2)).
+                collect(Collectors.toMap(TripleEmployerPersonDuration::getEmployer);
 
         Map<String, Person> expected = new HashMap<>();
         expected.put("EPAM", employees.get(4).getPerson());
@@ -175,6 +218,59 @@ public class Exercise2 {
         expected.put("mail.ru", employees.get(2).getPerson());
         expected.put("T-Systems", employees.get(5).getPerson());
         assertEquals(expected, collect);
+    }
+
+    private static class TripleEmployerPersonDuration {
+        private String employer;
+        private Person person;
+        private int duration;
+
+        TripleEmployerPersonDuration(String employer, Person person, int duration) {
+            this.employer = employer;
+            this.person = person;
+            this.duration = duration;
+        }
+
+        public Person getPerson() {
+            return person;
+        }
+
+        String getEmployer() {
+            return employer;
+        }
+
+        public int getDuration() {
+            return duration;
+        }
+    }
+
+    private static Stream<TripleEmployerPersonDuration> employeeToTriplePersonEmployerDuration(Employee employee) {
+        Person person = employee.getPerson();
+        return employee.getJobHistory().stream().
+                map(jobHistoryEntry ->
+                        new TripleEmployerPersonDuration(jobHistoryEntry.getEmployer(),person, jobHistoryEntry.getDuration()));
+    }
+
+    private class PairEmployerPairPersonDuration {
+        private String employer;
+        private PairPersonT<Integer> pairPersonDuration;
+
+        public PairEmployerPairPersonDuration(String employer, PairPersonT<Integer> pairPersonDuration) {
+            this.employer = employer;
+            this.pairPersonDuration = pairPersonDuration;
+        }
+
+        public String getEmployer() {
+            return employer;
+        }
+
+        public PairPersonT<Integer> getPairPersonDuration() {
+            return pairPersonDuration;
+        }
+    }
+
+    private static PairEmployerPairPersonDuration triplePersonEmployerDurationToPairEmployerPairPersonDuration(TripleEmployerPersonDuration employerPersonDuration) {
+        return new PairEmployerPairPersonDuration(employerPersonDuration.employer, new PairPersonT<>(employerPersonDuration.person, employerPersonDuration.duration))
     }
 
     private static List<Employee> getEmployees() {
