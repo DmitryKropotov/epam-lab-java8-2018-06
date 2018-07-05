@@ -40,8 +40,8 @@ public class Exercise2 {
          */
         public <R> MapHelper<R> map(Function<T, R> mapping) {
            List<R> result = new ArrayList<>();
-           source.forEach(T-> {
-               result.add(mapping.apply(T));
+           source.forEach(t -> {
+               result.add(mapping.apply(t));
            });
             return new MapHelper<>(result);
         }
@@ -54,15 +54,11 @@ public class Exercise2 {
          */
         public <R> MapHelper<R> flatMap(Function<T, List<R>> flatMapping) {
             List<List<R>> listOfListsOfR = new ArrayList<>();
-            source.forEach(T-> {
-                listOfListsOfR.add(flatMapping.apply(T));
+            source.forEach(t -> {
+                listOfListsOfR.add(flatMapping.apply(t));
             });
             List<R> result = new ArrayList<>();
-            listOfListsOfR.forEach(S-> {
-                S.forEach(L-> {
-                    result.add((R)L);
-                });
-            });
+            listOfListsOfR.forEach(result::addAll);
             return new MapHelper<>(result);
         }
     }
@@ -85,12 +81,7 @@ public class Exercise2 {
         List<Employee> employees = getEmployees();
 
         List<Integer> codes = MapHelper.from(employees).flatMap(Employee::getJobHistory).map(JobHistoryEntry::getPosition).
-                flatMap(String->{char[] arrayOfChars = String.toCharArray();
-                    List<Character> listOfCharacters = new ArrayList<>();
-                    for (char aChar : arrayOfChars) {
-                        listOfCharacters.add(aChar);
-                    }
-                    return listOfCharacters;}).map(Character->(int)Character).getMapped();
+                flatMap(Exercise2::stringToListOfTheirCodeLetters).map(Character->(int)Character).getMapped();
         // TODO               MapHelper.from(employees)
         // TODO                        .flatMap(Employee -> JobHistoryEntry)
         // TODO                        .map(JobHistoryEntry -> String(position))
@@ -98,6 +89,15 @@ public class Exercise2 {
         // TODO                        .map(Character -> Integer(code letter)
         // TODO                        .getMapped();
         assertEquals(calcCodes("dev", "dev", "tester", "dev", "dev", "QA", "QA", "dev", "tester", "tester", "QA", "QA", "QA", "dev"), codes);
+    }
+
+    private static List<Character> stringToListOfTheirCodeLetters(String string) {
+        char[] arrayOfChars = string.toCharArray();
+        List<Character> listOfCharacters = new ArrayList<>();
+        for (char aChar : arrayOfChars) {
+            listOfCharacters.add(aChar);
+        }
+        return listOfCharacters;
     }
 
     private static List<Integer> calcCodes(String...strings) {
