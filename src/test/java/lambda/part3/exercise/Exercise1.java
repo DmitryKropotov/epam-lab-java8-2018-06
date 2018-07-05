@@ -28,7 +28,7 @@ public class Exercise1 {
         // TODO функция извлечения длины из строки stringLengthExtractor: String -> Integer
         Function<String, Integer> stringLengthExtractor = String::length;
         // TODO функция извлечения длины полного имени из сотрудника fullNameLengthExtractor: Employee -> Integer
-        Function<Employee, Integer> fullNameLengthExtractor = stringLengthExtractor.compose(fullNameExtractor.compose(personExtractor));
+        Function<Employee, Integer> fullNameLengthExtractor = personExtractor.andThen(fullNameExtractor).andThen(String::length);
         // TODO преобразование списка employees в lengths используя fullNameLengthExtractor
         employees.forEach(Employee -> {lengths.add(fullNameLengthExtractor.apply(Employee));});
 
