@@ -18,33 +18,29 @@ public class Exercise3 {
 
     private static class LazyMapHelper<T, R> {
 
-        private List <R> source;
+        private List <T> source;
+        private Function<T, R> mappingFunction;
 
-        private LazyMapHelper(List<R> source){
+        private LazyMapHelper(List<T> source, Function<T, R> mappingFunction) {
             this.source = source;
+            this.mappingFunction = mappingFunction;
         }
 
         public static <T> LazyMapHelper<T, T> from(List<T> list) {
             // TODO реализация
-            return new LazyMapHelper<>(list);
+            return new LazyMapHelper<>(list, element -> element);
         }
 
         public List<R> force() {
             // TODO реализация
-            throw new UnsupportedOperationException();
+            List<R> result = new ArrayList<>();
+            source.forEach(element -> result.add(mappingFunction.apply(element)));
+            return result;
         }
 
         public <R2> LazyMapHelper<T, R2> map(Function<R, R2> mapping) {
             // TODO реализация
-            List<R2> result = new ArrayList<>();
-            source.forEach(R->{
-                result.add(mapping.apply(R));
-            });
-            return new LazyMapHelper<>(result);
-        }
-
-        public List<R> getMapped(){
-            return source;
+            return new LazyMapHelper<>(source, mappingFunction.andThen(mapping));
         }
     }
 
@@ -53,7 +49,7 @@ public class Exercise3 {
         List<Employee> employees = getEmployees();
 
         List<Integer> lengths = LazyMapHelper.from(employees).map(Employee::getPerson).map(Person::getFullName).
-                map(String::length).getMapped();
+                map(String::length).force();
         // TODO                 LazyMapHelper.from(employees)
         // TODO                              .map(Employee -> Person)
         // TODO                              .map(Person -> String(full name))
